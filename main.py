@@ -218,7 +218,7 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 			  'nu': [],
 			  'iteration': [i for i in range(n_iter)] * len(nu_mas) * n,
 			  'init_points': [init_points] * n_iter * len(nu_mas) * n,
-			  'iter_s': [n_iter / init_points] * n_iter * len(nu_mas) * n,
+			  'iters:points': [n_iter / init_points] * n_iter * len(nu_mas) * n,
 			  'X': [],
 			  'target': [],
 			  'model': [],
@@ -247,8 +247,6 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 				result_data[-1].append(-optimizer.max["target"])
 			else:
 				result_data.append([-optimizer.max["target"]])
-			print(optimizer._suit)
-			print(result_data)
 			print("Best result: {}; f(x) = {}.".format(optimizer.max["params"], optimizer.max["target"]))
 		# print(df_dct)
 
@@ -262,7 +260,7 @@ def main():
 	df_dct = {'f_name': [],
 			  'dimension': [],
 			  'init_points': [],
-			  'iter_s': [],
+			  'iters:points': [],
 			  'nu': [],
 			  'iteration': [],
 			  'X': [],
@@ -278,7 +276,7 @@ def main():
 	nu_mas = np.linspace(min_nu, max_nu, 13)
 	d_dct = {2: 12, 4: 80, 8: 180}
 
-	for i, d, points in enumerate(d_dct.items()):
+	for d, points in d_dct.items():
 		n_inter = 2 * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
 		for key in df_dct.keys():
