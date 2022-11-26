@@ -273,23 +273,24 @@ def main():
 	x_range = [-1, 2]
 	min_nu = 0
 	max_nu = 3
+	otn = 2
 	nu_mas = np.linspace(min_nu, max_nu, 13)
 	d_dct = {2: 12, 4: 80, 8: 180}
 
 	for d, points in d_dct.items():
-		n_inter = 2 * points
+		n_inter = otn * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
 		for key in df_dct.keys():
 			df_dct[key].extend(temp_df_dct[key])
 
 		df_marks = pd.DataFrame(temp_df_dct)
 
-		writer = pd.ExcelWriter(f'./results/{func}/{d}d/test_data.xlsx')
+		writer = pd.ExcelWriter(f'./results/{func}/{d}d/1to{otn}/test_data.xlsx')
 		df_marks.to_excel(writer)
 		writer.save()
 		print('DataFrame is written successfully to Excel File.')
 
-		df_marks.to_csv(f'./results/{func}/{d}d/test_data.csv', header=True, sep=';')
+		df_marks.to_csv(f'./results/{func}/{d}d/1to{otn}/test_data.csv', header=True, sep=';')
 		print('DataFrame is written successfully to csv.')
 
 	df_func = pd.DataFrame(df_dct)
