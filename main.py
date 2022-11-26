@@ -280,8 +280,6 @@ def main():
 	for d, points in d_dct.items():
 		n_inter = otn * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
-		for key in df_dct.keys():
-			df_dct[key].extend(temp_df_dct[key])
 
 		df_marks = pd.DataFrame(temp_df_dct)
 
@@ -292,22 +290,6 @@ def main():
 
 		df_marks.to_csv(f'./results/{func}/{d}d/1to{otn}/test_data.csv', header=True, sep=';')
 		print('DataFrame is written successfully to csv.')
-
-	df_func = pd.DataFrame(df_dct)
-
-	writer = pd.ExcelWriter(f'./results/{func}/test_data.xlsx')
-	df_func.to_excel(writer)
-	writer.save()
-	print('DataFrame is written successfully to Excel File.')
-
-	df_func.to_csv(f'./results/{func}/test_data.csv', header=True, sep=';')
-	print('DataFrame is written successfully to csv.')
-
-		# df_marks.to_pickle(f'./results/{func}/{d}d/test_data.pkl')
-		# print('DataFrame is written successfully to pkl.')
-
-
-
 
 
 # Press the green button in the gutter to run the script.
