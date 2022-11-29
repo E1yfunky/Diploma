@@ -1,10 +1,10 @@
 import warnings
 import random
 
-import numpy
 import numpy as np
 from bayes_opt.constraint import ConstraintModel
 
+from scipy.stats import qmc
 from bayes_opt.target_space import TargetSpace, ConstrainedTargetSpace
 from bayes_opt.event import Events, DEFAULT_EVENTS
 from bayes_opt.logger import _get_default_logger
@@ -276,6 +276,20 @@ class BayesianOptimization(Observable):
             self.subscribe(Events.OPTIMIZATION_STEP, _logger)
             self.subscribe(Events.OPTIMIZATION_END, _logger)
 
+    def hyper_cube(self, init_points):
+        if self._queue.empty and self._space.empty:
+            init_points = max(init_points, 1)
+
+        d = len(self._pbounds.keys())
+        data = np.empty((1, d))
+        sampler = qmc.LatinHypercube(d=d)
+        sample = sampler.random(n=init_points)
+        for point in range(init_points):
+            for col, (lower, upper) in enumerate(self._pbounds.values()):
+                data.T[col] = sample[point][col] * (upper - lower) + lower
+            self._queue.add(data.ravel())
+            data = np.empty((1, d))
+
     def maximize(self,
                  init_points=5,
                  n_iter=25,
@@ -323,7 +337,7 @@ class BayesianOptimization(Observable):
         """
         self._prime_subscriptions()
         self.dispatch(Events.OPTIMIZATION_START)
-        self._prime_queue(init_points)
+        self.hyper_cube(init_points)
         self.set_gp_params(**gp_params)
 
         util = UtilityFunction(kind=acq,

@@ -43,8 +43,8 @@ def make_points_animation(optimizer, iters, x_range):
 
 
 def make_3d_points_animation(optimizer, iters, x_range):
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
+	fig, ax = plt.subplots()
+
 	camera = Camera(fig)
 
 
@@ -52,7 +52,7 @@ def make_3d_points_animation(optimizer, iters, x_range):
 	test_data = np.array([np.array([key for key in i], dtype=float) for i in test_data[:-iters]])
 	test_x = np.array([i[0] for i in test_data], dtype=float)
 	test_y = np.array([i[1] for i in test_data], dtype=float)
-	test_points = optimizer.test_y[:-iters]
+	# test_points = optimizer.test_y[:-iters]
 
 	x_ros = np.arange(x_range[0], x_range[1] + 0.5, 0.5)
 	y_ros = np.arange(x_range[0], x_range[1] + 0.5, 0.5)
@@ -61,17 +61,22 @@ def make_3d_points_animation(optimizer, iters, x_range):
 	for j in range(len(x_ros)):
 		z_ros.append(list(get_rosenbrok_from_data(len(x_ros[j]), 2, [[x_ros[j][i], y_ros[j][i]] for i in range(len(x_ros[j]))])))
 
-	for i in range(len(test_points)):
+	for i in range(len(test_x)):
 		temp_x = test_x[:i + 1]
 		temp_y = test_y[:i + 1]
-		temp_z = test_points[:i + 1]
+		#temp_z = test_points[:i + 1]
 
-		ax.scatter(temp_x, temp_y, temp_z, color='green')
-		ax.plot_wireframe(x_ros, y_ros, - np.array(z_ros), cmap='inferno')
+		lev = [0, 0.1, 0.14, 0.17, 0.24, 0.3, 0.7, 1, 6, 10, 40, 100, 900, 2500]
+		color_region = np.zeros((14, 3))
+		color_region[:, 1:] = 0.8
+		color_region[:, 0] = np.linspace(0, 1, 14)
+		ax.contourf(x_ros, y_ros, - np.array(z_ros), levels=lev, colors=color_region)
+		ax.scatter(temp_x, temp_y, color='red')
+		#ax.plot_wireframe(x_ros, y_ros, - np.array(z_ros), cmap='inferno')
 		camera.snap()
 
 	animation = camera.animate()
-	animation.save('my_animation.gif')
+	animation.save('my_animation_centered.gif')
 
 
 def get_der(y1, y2, h):
@@ -273,22 +278,21 @@ def main():
 	x_range = [-1, 2]
 	min_nu = 0
 	max_nu = 3
-	otn = 2
+	otn = 3
 	nu_mas = np.linspace(min_nu, max_nu, 13)
 	d_dct = {2: 12, 4: 80, 8: 180}
 
 	for d, points in d_dct.items():
 		n_inter = otn * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
-
 		df_marks = pd.DataFrame(temp_df_dct)
 
-		writer = pd.ExcelWriter(f'./results/{func}/{d}d/1to{otn}/test_data.xlsx')
+		writer = pd.ExcelWriter(f'./results/{func}/{d}d/hypercube/not_centered/test_data.xlsx')
 		df_marks.to_excel(writer)
 		writer.save()
 		print('DataFrame is written successfully to Excel File.')
 
-		df_marks.to_csv(f'./results/{func}/{d}d/1to{otn}/test_data.csv', header=True, sep=';')
+		df_marks.to_csv(f'./results/{func}/{d}d/hypercube/not_centered/test_data.csv', header=True, sep=';')
 		print('DataFrame is written successfully to csv.')
 
 
