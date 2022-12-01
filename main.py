@@ -7,12 +7,11 @@ import random
 import matplotlib.pyplot as plt
 
 from itertools import product
+from numpy_lru_cache_decorator import np_cache
 from celluloid import Camera
 from statistics import mean
 from sklearn import linear_model
 from bayesian_optimization import BayesianOptimization
-from sklearn.gaussian_process.kernels import RBF, Matern
-from sklearn import preprocessing
 from sklearn.gaussian_process import GaussianProcessRegressor, kernels
 
 
@@ -125,6 +124,15 @@ def get_rosenbrok_data(n, m):
 	return X, y
 
 
+@np_cache(maxsize=None)
+def get_one_rosenbrock(X, n):
+	temp_y = 0
+	for i in range(0, n - 1):
+		temp_y += (1 - X[i]) ** 2 + 100 * ((X[i + 1] - X[i] ** 2) ** 2)
+
+	return temp_y
+
+
 def get_rosenbrok_from_data(m, n, X):
 	"""
 	Возвращает m результатов функции Розенброка для заданных точек X размерностей n
@@ -135,10 +143,7 @@ def get_rosenbrok_from_data(m, n, X):
 	"""
 	y = np.empty((m,))
 	for j in range(0, m):
-		temp_y = 0
-		for i in range(0, n - 1):
-			temp_y += (1 - X[j][i]) ** 2 + 100 * ((X[j][i + 1] - X[j][i] ** 2) ** 2)
-		y[j] = (np.array([- temp_y]))
+		y[j] = (np.array([- get_one_rosenbrock(X[j], n)]))
 
 	return y
 
@@ -252,6 +257,7 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 				result_data[-1].append(-optimizer.max["target"])
 			else:
 				result_data.append([-optimizer.max["target"]])
+			print(get_one_rosenbrock.cache_info())
 			print("Best result: {}; f(x) = {}.".format(optimizer.max["params"], optimizer.max["target"]))
 		# print(df_dct)
 
@@ -261,6 +267,7 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 def main():
 	random.seed(7)
 
+	get_one_rosenbrock.cache_clear()
 	func = "Rosenbrock"
 	df_dct = {'f_name': [],
 			  'dimension': [],
@@ -285,6 +292,7 @@ def main():
 	for d, points in d_dct.items():
 		n_inter = otn * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
+		get_one_rosenbrock.cache_clear()
 		df_marks = pd.DataFrame(temp_df_dct)
 
 		writer = pd.ExcelWriter(f'./results/{func}/{d}d/hypercube/not_centered/test_data.xlsx')
