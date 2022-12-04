@@ -45,7 +45,28 @@ def plot_suitability_by_nu(dimension, df, otn, way):
 	plt.show()
 
 
-def the_best_of_mean(df, dimension, way):
+def the_best_of_mean_3d(df, dimension, way):
+	mas = []
+	f_mas = []
+	nu_mas = []
+	for nu in np.linspace(0, 3, 13):
+		mas.extend(df[df.nu == nu].groupby(['seed']).agg({'suitability': 'mean'})['suitability'])
+		f_mas.extend(df[df.nu == nu].groupby(['seed']).agg({'target': 'min'})['target'])
+		nu_mas.extend([nu] * 10)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+	ax.scatter(nu_mas, f_mas, mas, alpha=0.5)
+	ax.set_title(f'{dimension}d f of m_suitability of nu')
+	ax.set_zlabel('suitability')
+	ax.set_ylabel('F*')
+	ax.set_xlabel('Nu')
+
+	plt.savefig(f"./results/{way}f_of_m_suitability_of_nu.png")
+	plt.show()
+
+
+def the_best_of_mean_2d(df, dimension, way):
 	mas = []
 	f_mas = []
 	nu_mas = []
@@ -53,17 +74,6 @@ def the_best_of_mean(df, dimension, way):
 		mas.append(df[df.nu == nu].groupby(['seed']).agg({'suitability': 'mean'})['suitability'])
 		f_mas.append(df[df.nu == nu].groupby(['seed']).agg({'target': 'min'})['target'])
 		nu_mas.append([nu] * 10)
-
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111, projection='3d')
-	# ax.scatter(nu_mas, f_mas, mas, alpha=0.5)
-	# ax.set_title(f'{dimension}d f of m_suitability of nu')
-	# ax.set_zlabel('suitability')
-	# ax.set_ylabel('F*')
-	# ax.set_xlabel('Nu')
-	#
-	# plt.savefig(f"./results/{way}f_of_m_suitability_of_nu.png")
-	# plt.show()
 
 	fig, axs = plt.subplots(nrows=4, ncols=4)
 	fig.suptitle(f'{dimension}d f of m_suitability of nu')
@@ -136,11 +146,12 @@ def f_history(df, dimension, way):
 def main():
 	print("get started")
 	dimension = 2
-	otn = 3
-	way = f'Rosenbrock/{dimension}d/hypercube/not_centered/'
+	otn = 2
+	way = f'Rosenbrock/{dimension}d/1to{otn}/'
 	df = pd.read_csv(f"./results/{way}test_data.csv",  delimiter=';')
 
-	the_best_of_mean(df, dimension, way)
+	the_best_of_mean_2d(df, dimension, way)
+	the_best_of_mean_3d(df, dimension, way)
 	suitability_history(df, dimension, way)
 	plot_suitability_by_nu(dimension, df, otn, way)
 	plot_f_by_nu(dimension, df, otn, way)
