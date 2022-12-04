@@ -284,10 +284,10 @@ def main():
 
 	x_range = [-1, 2]
 	min_nu = 0
-	max_nu = 3
+	max_nu = 1.5
 	otn = 3
-	nu_mas = np.linspace(min_nu, max_nu, 13)
-	d_dct = {2: 12, 4: 80, 8: 180}
+	nu_mas = np.linspace(min_nu, max_nu, 7)
+	d_dct = {4: 80, 8: 180}
 
 	for d, points in d_dct.items():
 		n_inter = otn * points
