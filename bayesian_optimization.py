@@ -8,7 +8,7 @@ from scipy.stats import qmc
 from bayes_opt.target_space import TargetSpace
 from bayes_opt.event import Events, DEFAULT_EVENTS
 from bayes_opt.logger import _get_default_logger
-from util import UtilityFunction, acq_max, ensure_rng
+from bayes_opt.util import UtilityFunction, acq_max, ensure_rng
 
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process import GaussianProcessRegressor
@@ -254,13 +254,12 @@ class BayesianOptimization(Observable):
                                     self._space._constraint_values)
 
         # Finding argmax of the acquisition function.
-        suggestion, model_max = acq_max(ac=utility_function.utility,
+        suggestion = acq_max(ac=utility_function.utility,
                              gp=self._gp,
                              constraint=self.constraint,
                              y_max=self._space.target.max(),
                              bounds=self._space.bounds,
                              random_state=self._random_state)
-        self._model_res.append(-model_max[0])
         return self._space.array_to_params(suggestion)
 
     def _prime_queue(self, init_points):

@@ -231,13 +231,12 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 			  'iters:points': [n_iter / init_points] * n_iter * len(nu_mas) * n,
 			  'X': [],
 			  'target': [],
-			  'model': [],
 			  'score': [],
 			  'suitability': [],
 			  'seed': []}
 	for nu in nu_mas:
 		for i in range(n):
-			seed = random.randint(1, 30000)
+			seed = i
 			df_dct['nu'].extend([nu] * n_iter)
 			optimizer = BayesianOptimization(f=black_box_func,
 											 pbounds={f"x[{_}]": x_range for _ in range(d)},
@@ -249,7 +248,6 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 			optimizer.maximize(init_points=init_points, n_iter=n_iter)
 			df_dct['X'].extend(optimizer.test_x)
 			df_dct['target'].extend(optimizer._res)
-			df_dct['model'].extend(optimizer._model_res)
 			df_dct['score'].extend(optimizer._score_res)
 			df_dct['suitability'].extend(optimizer._suit)
 			df_dct['seed'].extend([seed]*n_iter)
@@ -277,17 +275,16 @@ def main():
 			  'iteration': [],
 			  'X': [],
 			  'target': [],
-			  'model': [],
 			  'score': [],
 			  'suitability': [],
 			  'seed': []}
 
 	x_range = [-1, 2]
 	min_nu = 0
-	max_nu = 1.5
+	max_nu = 3
 	otn = 3
-	nu_mas = np.linspace(min_nu, max_nu, 7)
-	d_dct = {4: 80, 8: 180}
+	nu_mas = np.linspace(min_nu, max_nu, 13)
+	d_dct = {2: 12, 4: 80, 8: 180}
 
 	for d, points in d_dct.items():
 		n_inter = otn * points
