@@ -145,9 +145,9 @@ def f_history(df, dimension, way):
 
 def main():
 	print("get started")
-	dimension = 2
-	otn = 2
-	way = f'Rosenbrock/{dimension}d/1to{otn}/'
+	dimension = 4
+	otn = 3
+	way = f'Rosenbrock/{dimension}d/hypercube/not_centered/'
 	df = pd.read_csv(f"./results/{way}test_data.csv",  delimiter=';')
 
 	the_best_of_mean_2d(df, dimension, way)
