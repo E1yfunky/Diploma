@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from itertools import product
 from numpy_lru_cache_decorator import np_cache
 from celluloid import Camera
+from functools import lru_cache
 from statistics import mean
 from sklearn import linear_model
 from bayesian_optimization import BayesianOptimization
@@ -124,7 +125,6 @@ def get_rosenbrok_data(n, m):
 	return X, y
 
 
-@np_cache(maxsize=None)
 def get_one_rosenbrock(X, n):
 	temp_y = 0
 	for i in range(0, n - 1):
@@ -204,6 +204,7 @@ def get_srinivas_from_data(m, n, X):
 	return y
 
 
+@lru_cache(maxsize=None)
 def black_box_func(**X):
 	X = np.array([X[key] for key in sorted(X)], dtype=float)
 
@@ -255,7 +256,7 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 				result_data[-1].append(-optimizer.max["target"])
 			else:
 				result_data.append([-optimizer.max["target"]])
-			print(get_one_rosenbrock.cache_info())
+			print(black_box_func.cache_info())
 			print("Best result: {}; f(x) = {}.".format(optimizer.max["params"], optimizer.max["target"]))
 		# print(df_dct)
 
@@ -265,7 +266,7 @@ def bayes_optim(d, nu_mas, init_points, n_iter, x_range, n, true_res):
 def main():
 	random.seed(7)
 
-	get_one_rosenbrock.cache_clear()
+	black_box_func.cache_clear()
 	func = "Rosenbrock"
 	df_dct = {'f_name': [],
 			  'dimension': [],
@@ -284,12 +285,12 @@ def main():
 	max_nu = 3
 	otn = 3
 	nu_mas = np.linspace(min_nu, max_nu, 13)
-	d_dct = {2: 12, 4: 80, 8: 180}
+	d_dct = {4: 80, 8: 180}
 
 	for d, points in d_dct.items():
 		n_inter = otn * points
 		X, y_s, temp_df_dct = bayes_optim(d, nu_mas, points, n_inter, x_range, 10, 0.0)
-		get_one_rosenbrock.cache_clear()
+		black_box_func.cache_clear()
 		df_marks = pd.DataFrame(temp_df_dct)
 
 		writer = pd.ExcelWriter(f'./results/{func}/{d}d/hypercube/not_centered/test_data.xlsx')
