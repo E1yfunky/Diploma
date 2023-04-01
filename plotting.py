@@ -84,14 +84,14 @@ def plot_nu_by_method(df, df_s, df_sc, dimension, way):
 	nu_mas = []
 	nu_mas.append(df['nu'])
 	nu_mas.append(df_s['nu'])
-	for i in nu_mas[1]:
-		if i == np.inf:
-			i = 5
+	for i in range(len(nu_mas[1])):
+		if nu_mas[1][i] == np.inf:
+			nu_mas[1][i] = 5
 
 	nu_mas.append(df_sc['nu'])
-	for i in nu_mas[2]:
-		if i == np.inf:
-			i = 5
+	for i in range(len(nu_mas[2])):
+		if nu_mas[2][i] == np.inf:
+			nu_mas[2][i] = 5
 
 	ax.boxplot(nu_mas)
 	ax.set_xticklabels(['No', 'Suitability', 'Score'])
@@ -373,7 +373,7 @@ def score_suitability(df, df_s, df_sc, dimension, way):
 
 def main():
 	print("get started")
-	dimension = 8
+	dimension = 2
 	otn = 3
 	way = f'Ackley/{dimension}d/hypercube/'
 	df = pd.read_csv(f"./results/{way}test_data_.csv",  delimiter=';')
