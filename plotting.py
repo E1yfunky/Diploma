@@ -22,7 +22,7 @@ def plot_results_by_nu(dimension, df, otn, way):
 	score_mas = []
 	for nu in np.linspace(0, 3, 13):
 		suit_mas.append(df[df.nu == nu].groupby(['iteration']).agg({'suitability': 'mean'})['suitability'])
-		target_mas.append(df[df.nu == nu].groupby(['seed']).agg({'target': 'min'})['target'])
+		target_mas.append(df[df.nu == nu].groupby(['seed']).agg({'f': 'min'})['f'])
 		score_mas.append(df[df.nu == nu].groupby(['iteration']).agg({'score': 'mean'})['score'])
 
 	# ax[0].set_yscale('log')
@@ -50,7 +50,7 @@ def plot_results_by_nu(dimension, df, otn, way):
 	plt.show()
 
 
-def plot_by_method(df, df_s, df_sc, dimension, way):
+def plot_by_method(df_mas, methods, dimension, way):
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
 	plt.rcParams['font.size'] = '16'
@@ -59,12 +59,11 @@ def plot_by_method(df, df_s, df_sc, dimension, way):
 	ax = fig.add_subplot()
 
 	target_mas = []
-	target_mas.append(df.groupby(['seed']).agg({'target': 'min'})['target'])
-	target_mas.append(df_s.groupby(['seed']).agg({'target': 'min'})['target'])
-	target_mas.append(df_sc.groupby(['seed']).agg({'target': 'min'})['target'])
+	for df in df_mas:
+		target_mas.append(df.groupby(['seed']).agg({'f': 'min'})['f'])
 
 	ax.boxplot(target_mas)
-	ax.set_xticklabels(['No', 'Suitability', 'Score'])
+	ax.set_xticklabels(methods)
 	ax.set_title(f'{dimension}d f of method')
 	ax.set_ylabel('$\widetilde{f}^*$', style='italic')
 	ax.set_xlabel('Method', style='italic')
@@ -73,7 +72,7 @@ def plot_by_method(df, df_s, df_sc, dimension, way):
 	plt.show()
 
 
-def plot_nu_by_method(df, df_s, df_sc, dimension, way):
+def plot_nu_by_method(df_mas, methods, dimension, way):
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
 	plt.rcParams['font.size'] = '16'
@@ -82,19 +81,14 @@ def plot_nu_by_method(df, df_s, df_sc, dimension, way):
 	ax = fig.add_subplot()
 
 	nu_mas = []
-	nu_mas.append(df['nu'])
-	nu_mas.append(df_s['nu'])
-	for i in range(len(nu_mas[1])):
-		if nu_mas[1][i] == np.inf:
-			nu_mas[1][i] = 5
-
-	nu_mas.append(df_sc['nu'])
-	for i in range(len(nu_mas[2])):
-		if nu_mas[2][i] == np.inf:
-			nu_mas[2][i] = 5
+	for i, df in enumerate(df_mas):
+		nu_mas.append(df['nu'].dropna().replace(np.inf, 5))
+		# for j in range(len(nu_mas[i])):
+		# 	if nu_mas[i][j] == np.inf:
+		# 		nu_mas[i][j] = 5
 
 	ax.boxplot(nu_mas)
-	ax.set_xticklabels(['No', 'Suitability', 'Score'])
+	ax.set_xticklabels(methods)
 	ax.set_title(f'{dimension}d nu of method')
 	ax.set_ylabel('nu', style='italic')
 	ax.set_xlabel('Method', style='italic')
@@ -109,7 +103,7 @@ def the_best_of_mean_3d(df, dimension, way):
 	nu_mas = []
 	for nu in np.linspace(0, 3, 13):
 		mas.extend(df[df.nu == nu].groupby(['seed']).agg({'suitability': 'mean'})['suitability'])
-		f_mas.extend(df[df.nu == nu].groupby(['seed']).agg({'target': 'min'})['target'])
+		f_mas.extend(df[df.nu == nu].groupby(['seed']).agg({'f': 'min'})['f'])
 		nu_mas.extend([nu] * 10)
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
@@ -133,7 +127,7 @@ def the_best_of_mean_2d(df, dimension, way):
 	nu_mas = []
 	for nu in np.linspace(0, 3, 13):
 		mas.append(df[df.nu == nu].groupby(['seed']).agg({'suitability': 'mean'})['suitability'])
-		f_mas.append(df[df.nu == nu].groupby(['seed']).agg({'target': 'min'})['target'])
+		f_mas.append(df[df.nu == nu].groupby(['seed']).agg({'f': 'min'})['f'])
 		nu_mas.append([nu] * 10)
 
 	plt.rcParams["font.family"] = "serif"
@@ -212,35 +206,7 @@ def suitability_history(df, dimension, way):
 	plt.show()
 
 
-def suitability_history_comparison(df, df_s, df_sc, dimension, way):
-	max_t = df['iteration'].max()
-
-	suit_mas = df.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	max_s = -10
-	temp_mas = []
-	for suit in suit_mas:
-		max_s = max(suit, max_s)
-		temp_mas.append(max_s)
-	s_mas = temp_mas
-
-	suit_mas_s = df_s.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	max_s = -10
-	temp_mas = []
-	for suit in suit_mas_s:
-		max_s = max(suit, max_s)
-		temp_mas.append(max_s)
-	s_mas_s = temp_mas
-
-	suit_mas_sc = df_sc.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	max_s = -10
-	temp_mas = []
-	for suit in suit_mas_sc:
-		max_s = max(suit, max_s)
-		temp_mas.append(max_s)
-	s_mas_sc = temp_mas
-
-	#colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#7bc8f6', '#006400', '#e6e6fa']
-
+def suitability_history_comparison(df_mas, methods, dimension, way):
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
 	plt.rcParams['font.size'] = '14'
@@ -248,9 +214,17 @@ def suitability_history_comparison(df, df_s, df_sc, dimension, way):
 	fig = plt.figure()
 	ax = fig.add_subplot()
 
-	ax.plot(np.arange(0, max_t + 1, 1), s_mas, 'red', label='No')
-	ax.plot(np.arange(0, max_t + 1, 1), s_mas_s, 'blue', label='Suitability')
-	ax.plot(np.arange(0, max_t + 1, 1), s_mas_sc, 'green', label='Score')
+	for i, df in enumerate(df_mas):
+		max_t = df['iteration'].max()
+		suit_mas = df.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
+		max_s = -10
+		temp_mas = []
+		for suit in suit_mas:
+			max_s = max(suit, max_s)
+			temp_mas.append(max_s)
+		s_mas = temp_mas
+		ax.plot(np.arange(0, max_t, 1), s_mas, label=methods[i])
+
 	ax.set_xlabel('t', style='italic')
 	ax.set_ylabel('Su', style='italic')
 	ax.legend()
@@ -266,7 +240,7 @@ def f_history(df, dimension, way):
 
 
 	#for nu in np.linspace(0, 3, 13):
-	target_mas = df.groupby(['iteration']).agg({'target': 'mean'})['target']
+	target_mas = df.groupby(['iteration']).agg({'f': 'mean'})['f']
 	min_f = 100000000000000
 	temp_mas = []
 	for target in target_mas:
@@ -294,33 +268,7 @@ def f_history(df, dimension, way):
 	plt.show()
 
 
-def f_history_comparison(df, df_s, df_sc, dimension, way):
-	max_t = df['iteration'].max()
-
-	target_mas = df.groupby(['iteration']).agg({'target': 'mean'})['target']
-	target_mas_s = df_s.groupby(['iteration']).agg({'target': 'mean'})['target']
-	target_mas_sc = df_sc.groupby(['iteration']).agg({'target': 'mean'})['target']
-	min_f = 100000000000000
-	temp_mas = []
-	for target in target_mas:
-		min_f = min(target, min_f)
-		temp_mas.append(min_f)
-	f_mas = temp_mas
-
-	temp_mas = []
-	min_f = 100000000000000
-	for target in target_mas_s:
-		min_f = min(target, min_f)
-		temp_mas.append(min_f)
-	f_mas_s = temp_mas
-
-	temp_mas = []
-	min_f = 100000000000000
-	for target in target_mas_sc:
-		min_f = min(target, min_f)
-		temp_mas.append(min_f)
-	f_mas_sc = temp_mas
-
+def f_history_comparison(df_mas, methods, dimension, way):
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
 	plt.rcParams['font.size'] = '14'
@@ -328,9 +276,17 @@ def f_history_comparison(df, df_s, df_sc, dimension, way):
 	fig = plt.figure()
 	ax = fig.add_subplot()
 
-	ax.plot(np.arange(0, max_t + 1, 1), f_mas, 'red', label='No')
-	ax.plot(np.arange(0, max_t + 1, 1), f_mas_s, 'blue', label='Suitabality')
-	ax.plot(np.arange(0, max_t + 1, 1), f_mas_sc, 'green', label='Score')
+	for i, df in enumerate(df_mas):
+		max_t = df['iteration'].max()
+		target_mas = df.groupby(['iteration']).agg({'f': 'mean'})['f']
+		min_f = np.inf
+		temp_mas = []
+		for target in target_mas:
+			min_f = min(target, min_f)
+			temp_mas.append(min_f)
+		f_mas = temp_mas
+		ax.plot(np.arange(0, max_t, 1), f_mas, label=methods[i])
+
 	ax.set_xlabel('t', style='italic')
 	ax.set_ylabel('$\widetilde{f}^*$')
 	ax.legend()
@@ -340,33 +296,23 @@ def f_history_comparison(df, df_s, df_sc, dimension, way):
 	plt.show()
 
 
-def score_suitability(df, df_s, df_sc, dimension, way):
-	suit_mas = df.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	score_mas = df.groupby(['iteration']).agg({'score': 'mean'})['score']
-
-	suit_mas_s = df_s.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	score_mas_s = df_s.groupby(['iteration']).agg({'score': 'mean'})['score']
-
-	suit_mas_sc = df_sc.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
-	score_mas_sc = df_sc.groupby(['iteration']).agg({'score': 'mean'})['score']
-
-	# colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf', '#7bc8f6', '#006400', '#e6e6fa']
-
+def score_suitability(df_mas, methods, dimension, way):
 	plt.rcParams["font.family"] = "serif"
 	plt.rcParams["font.serif"] = "Times New Roman"
 	plt.rcParams['font.size'] = '14'
-
 	fig = plt.figure()
 	ax = fig.add_subplot()
 
-	ax.plot(suit_mas, score_mas, 'r^', label='No')
-	ax.plot(suit_mas_s, score_mas_s, 'b^', label='Suitability')
-	ax.plot(suit_mas_sc, score_mas_sc, 'g^', label='Score')
+	for i, df in enumerate(df_mas):
+		suit_mas = df.groupby(['iteration']).agg({'suitability': 'mean'})['suitability']
+		score_mas = df.groupby(['iteration']).agg({'score': 'mean'})['score']
+		ax.plot(suit_mas, score_mas, '^', label=methods[i])
+
 	ax.set_xlabel('Su', style='italic')
 	ax.set_ylabel('Score', style='italic')
 	ax.legend()
 
-	ax.set_title(f'{dimension}d history of suitability')
+	ax.set_title(f'{dimension}d score-suitability')
 	plt.savefig(f"./results/{way}score_suitability_.png")
 	plt.show()
 
@@ -375,16 +321,19 @@ def main():
 	print("get started")
 	dimension = 2
 	otn = 3
-	way = f'Ackley/{dimension}d/hypercube/'
-	df = pd.read_csv(f"./results/{way}test_data_.csv",  delimiter=';')
-	df_s = pd.read_csv(f"./results/{way}test_data_s.csv",  delimiter=';')
-	df_sc = pd.read_csv(f"./results/{way}test_data_sc.csv",  delimiter=';')
+	way = f'Ackley/{dimension}d/interpol/'
+	df = pd.read_csv(f"./results/{way}test_data.csv",  delimiter=',')
+	df_05 = pd.read_csv(f"./results/{way}test_data_05.csv",  delimiter=',')
+	df_001 = pd.read_csv(f"./results/{way}test_data_001.csv", delimiter=',')
+	df_099 = pd.read_csv(f"./results/{way}test_data_099.csv", delimiter=',')
+	df_mas = [df, df_001, df_05, df_099]
+	methods = ['No', '0.001', '0.5', '0.99']
 
-	plot_nu_by_method(df, df_s, df_sc, dimension, way)
-	plot_by_method(df, df_s, df_sc, dimension, way)
-	score_suitability(df, df_s, df_sc, dimension, way)
-	f_history_comparison(df, df_s, df_sc, dimension, way)
-	suitability_history_comparison(df, df_s, df_sc, dimension, way)
+	plot_nu_by_method(df_mas, methods, dimension, way)
+	plot_by_method(df_mas, methods, dimension, way)
+	score_suitability(df_mas, methods, dimension, way)
+	f_history_comparison(df_mas, methods, dimension, way)
+	suitability_history_comparison(df_mas, methods, dimension, way)
 
 	# plot_results_by_nu(dimension, df, otn, way)
 	# f_history(df, dimension, way)
